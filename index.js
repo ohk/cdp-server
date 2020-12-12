@@ -1,19 +1,29 @@
 const http = require("http");
 const socket = require("socket.io");
 
-const server = http.createServer(function (req, res) {
-  // Set CORS headers
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Request-Method", "*");
-  res.setHeader("Access-Control-Allow-Methods", "OPTIONS, GET");
-  res.setHeader("Access-Control-Allow-Headers", "*");
+const server = http.createServer((req, res) => {
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "OPTIONS, POST, GET",
+    "Access-Control-Max-Age": 2592000, // 30 days
+    /** add other headers as per requirement */
+  };
+
   if (req.method === "OPTIONS") {
-    res.writeHead(200);
+    res.writeHead(204, headers);
     res.end();
     return;
   }
-});
 
+  if (["GET", "POST"].indexOf(req.method) > -1) {
+    res.writeHead(200, headers);
+    res.end("Hello World");
+    return;
+  }
+
+  res.writeHead(405, headers);
+  res.end(`${req.method} is not allowed for the request.`);
+});
 const io = socket(server);
 
 var clients = [];
@@ -103,4 +113,4 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(process.env.PORT, () => console.log(`Server Running`));
+server.listen(8080, () => console.log(`Server Running`));
